@@ -6,6 +6,7 @@ from selenium.webdriver.common.keys import Keys
 import undetected_chromedriver as uc
 import time
 import random
+import multiprocessing
 
 def human_delay(min_seconds=1.5, max_seconds=4.5):
     """إضافة تأخير زمني عشوائي لمحاكاة السلوك البشري وتجنب الحظر"""
@@ -51,6 +52,8 @@ def start_scraping():
         options = uc.ChromeOptions()
         options.add_argument("--disable-notifications")
         options.add_argument("--disable-popup-blocking")
+        options.add_argument("--no-sandbox") # ضروري أحياناً للعمل كملف تنفيذي
+        options.add_argument("--disable-dev-shm-usage")
         
         # إضافة إعدادات البروكسي إذا تم توفيرها
         if proxy:
@@ -126,39 +129,42 @@ def start_scraping():
     except Exception as e:
         messagebox.showerror("خطأ في Selenium", str(e))
 
-root = tk.Tk()
-root.title("أداة استخراج أعضاء فيسبوك")
+if __name__ == '__main__':
+    multiprocessing.freeze_support() # ضروري جداً لـ PyInstaller و undetected-chromedriver في ويندوز
+    
+    root = tk.Tk()
+    root.title("أداة استخراج أعضاء فيسبوك")
 
-# ... (نفس الواجهة السابقة)
+    # ... (نفس الواجهة السابقة)
 
-tk.Label(root, text="البريد الإلكتروني:").grid(row=0, column=0, padx=10, pady=5)
-email_entry = tk.Entry(root, width=50)
-email_entry.grid(row=0, column=1, padx=10, pady=5)
-make_textmenu(email_entry)
+    tk.Label(root, text="البريد الإلكتروني:").grid(row=0, column=0, padx=10, pady=5)
+    email_entry = tk.Entry(root, width=50)
+    email_entry.grid(row=0, column=1, padx=10, pady=5)
+    make_textmenu(email_entry)
 
-tk.Label(root, text="كلمة المرور:").grid(row=1, column=0, padx=10, pady=5)
-password_entry = tk.Entry(root, show="*", width=50)
-password_entry.grid(row=1, column=1, padx=10, pady=5)
-make_textmenu(password_entry)
+    tk.Label(root, text="كلمة المرور:").grid(row=1, column=0, padx=10, pady=5)
+    password_entry = tk.Entry(root, show="*", width=50)
+    password_entry.grid(row=1, column=1, padx=10, pady=5)
+    make_textmenu(password_entry)
 
-tk.Label(root, text="رابط الصفحة:").grid(row=2, column=0, padx=10, pady=5)
-page_url_entry = tk.Entry(root, width=50)
-page_url_entry.grid(row=2, column=1, padx=10, pady=5)
-make_textmenu(page_url_entry)
+    tk.Label(root, text="رابط الصفحة:").grid(row=2, column=0, padx=10, pady=5)
+    page_url_entry = tk.Entry(root, width=50)
+    page_url_entry.grid(row=2, column=1, padx=10, pady=5)
+    make_textmenu(page_url_entry)
 
-tk.Label(root, text="البروكسي (اختياري - IP:Port):").grid(row=3, column=0, padx=10, pady=5)
-proxy_entry = tk.Entry(root, width=50)
-proxy_entry.grid(row=3, column=1, padx=10, pady=5)
-make_textmenu(proxy_entry)
+    tk.Label(root, text="البروكسي (اختياري - IP:Port):").grid(row=3, column=0, padx=10, pady=5)
+    proxy_entry = tk.Entry(root, width=50)
+    proxy_entry.grid(row=3, column=1, padx=10, pady=5)
+    make_textmenu(proxy_entry)
 
-start_button = tk.Button(root, text="بدء الاستخراج", command=start_scraping)
-start_button.grid(row=4, column=0, columnspan=2, pady=10)
+    start_button = tk.Button(root, text="بدء الاستخراج", command=start_scraping)
+    start_button.grid(row=4, column=0, columnspan=2, pady=10)
 
-results_text = scrolledtext.ScrolledText(root, width=70, height=20)
-results_text.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
-make_textmenu(results_text)
+    results_text = scrolledtext.ScrolledText(root, width=70, height=20)
+    results_text.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+    make_textmenu(results_text)
 
-save_button = tk.Button(root, text="حفظ النتائج", command=save_results)
-save_button.grid(row=6, column=0, columnspan=2, pady=10)
+    save_button = tk.Button(root, text="حفظ النتائج", command=save_results)
+    save_button.grid(row=6, column=0, columnspan=2, pady=10)
 
-root.mainloop()
+    root.mainloop()
