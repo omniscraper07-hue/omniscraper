@@ -7,6 +7,9 @@ import undetected_chromedriver as uc
 import time
 import random
 import multiprocessing
+import tempfile
+import os
+import shutil
 
 def human_delay(min_seconds=1.5, max_seconds=4.5):
     """إضافة تأخير زمني عشوائي لمحاكاة السلوك البشري وتجنب الحظر"""
@@ -48,12 +51,16 @@ def start_scraping():
         return
 
     try:
+        # إنشاء مجلد مؤقت لبيانات المتصفح لمنع التعارض
+        user_data_dir = tempfile.mkdtemp()
+        
         # إعداد خيارات المتصفح لتخطي الحماية
         options = uc.ChromeOptions()
         options.add_argument("--disable-notifications")
         options.add_argument("--disable-popup-blocking")
         options.add_argument("--no-sandbox") # ضروري أحياناً للعمل كملف تنفيذي
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument(f"--user-data-dir={user_data_dir}") # استخدام مسار بيانات منفصل
         
         # إضافة إعدادات البروكسي إذا تم توفيرها
         if proxy:
@@ -61,7 +68,7 @@ def start_scraping():
         
         # تحديد الإصدار الرئيسي لمتصفح Chrome المثبت لديك لتجنب تعارض إصدارات ChromeDriver
         # يمكنك تغيير هذا الرقم (146) إذا قمت بتحديث متصفح Chrome مستقبلاً
-        driver = uc.Chrome(options=options, version_main=146)
+        driver = uc.Chrome(options=options, version_main=146, use_subprocess=False)
 
         driver.get("https://www.facebook.com")
         human_delay(2, 4)
@@ -125,9 +132,21 @@ def start_scraping():
 
         messagebox.showinfo("نجاح", f"تم استخراج {len(member_names)} عضو بنجاح!")
         driver.quit()
+        
+        # تنظيف المجلد المؤقت
+        try:
+            shutil.rmtree(user_data_dir)
+        except:
+            pass
 
     except Exception as e:
         messagebox.showerror("خطأ في Selenium", str(e))
+        # محاولة تنظيف المجلد المؤقت حتى في حالة الخطأ
+        try:
+            if 'user_data_dir' in locals():
+                shutil.rmtree(user_data_dir)
+        except:
+            pass
 
 if __name__ == '__main__':
     multiprocessing.freeze_support() # ضروري جداً لـ PyInstaller و undetected-chromedriver في ويندوز
