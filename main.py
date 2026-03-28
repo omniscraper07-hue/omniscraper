@@ -56,7 +56,9 @@ def start_scraping():
         if proxy:
             options.add_argument(f'--proxy-server={proxy}')
         
-        driver = uc.Chrome(options=options)
+        # تحديد الإصدار الرئيسي لمتصفح Chrome المثبت لديك لتجنب تعارض إصدارات ChromeDriver
+        # يمكنك تغيير هذا الرقم (146) إذا قمت بتحديث متصفح Chrome مستقبلاً
+        driver = uc.Chrome(options=options, version_main=146)
 
         driver.get("https://www.facebook.com")
         human_delay(2, 4)
